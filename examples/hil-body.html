@@ -1,0 +1,61 @@
+
+<section class="section-panel" id="decision" data-toc-label="核心原则" aria-labelledby="decision-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">01</span><div><h2 id="decision-title">先看结论，再决定读多深</h2><p>核心原则与默认阅读路径</p></div></div>
+  <div class="section-body">
+  <p class="prose">HIL 约定 AI 怎样向人表达信息：结论如何组织、依据如何关联、重要条件怎样保持可见。HTML 是当前的文档载体；当短问题可以直接说清时，仍然在对话中回答。</p>
+  <div class="cards">
+    <article class="card"><span class="label">重点 · 先读</span><h3>结论与关键依据</h3><p>建议、适用条件和影响决定的事实保持可见，打开文档就能找到。</p></article>
+    <article class="card good"><span class="label">收益 · 按需深入</span><h3>细节完整保留</h3><p>推导、完整证据和长代码放入折叠区，读者可以自行选择阅读深度。</p></article>
+    <article class="card warn"><span class="label">注意 · 保留短答</span><h3>不把每次回复文件化</h3><p>简单解释、执行状态和一般追问留在对话里，避免打断交流。</p></article>
+  </div>
+  <aside class="callout danger"><strong>重要边界</strong><p>自动选择由模型判断，不能保证每轮都触发。影响结论的风险和不确定性不得藏在折叠区。</p></aside>
+</div>
+</section>
+<section class="section-panel" id="layout" data-toc-label="布局选择" aria-labelledby="layout-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">02</span><div><h2 id="layout-title">含义决定表达，内容决定布局</h2><p>含义、组件与视觉层级</p></div></div>
+  <div class="section-body">
+  <p class="prose">解释需要连续阅读，比较需要横向扫视，状态需要快速识别。三种内容可以出现在同一页中；它们共享文字、间距与颜色规范，不必使用相同的容器。依据靠近它支持的结论，条件与风险靠近它们限定的判断。</p>
+  <div class="table-scroll" tabindex="0" role="region" aria-label="表达方式对比表，可横向滚动">
+    <table><caption>选择组件时，优先考虑读者要完成的阅读动作</caption><thead><tr><th scope="col">阅读任务</th><th scope="col">默认表达</th><th scope="col">直接展示</th><th scope="col">可折叠内容</th></tr></thead>
+    <tbody><tr><th scope="row">理解一个观点</th><td>连续正文与小标题</td><td>结论、关键依据、限定条件</td><td>补充例子和详细推导</td></tr><tr><th scope="row">比较多个方案</th><td>对比表与推荐说明</td><td>差异、成本、重要风险</td><td>逐项测算过程</td></tr><tr><th scope="row">掌握工作状态</th><td>少量卡片与行动列表</td><td>状态、阻塞项、待决事项</td><td>完整执行记录</td></tr><tr><th scope="row">理解处理流程</th><td>流程图与简短说明</td><td>主路径、分支条件</td><td>图示源码及实现细节</td></tr></tbody></table>
+  </div>
+  <aside class="callout warn"><strong>表达不能改变事实</strong><p>若“方案 A 便宜 20%”仅在特定年用量和一年合同下成立，这两个条件应当与价格结论一起可见，计算过程可以折叠。若数字只是估算，就保留“估算”；资料不足时，直接说明尚不能确定。</p><p class="muted">这里的比例与条件仅用于演示表达原则。</p></aside>
+  <details><summary>查看精简前后的表达差异</summary><p><strong>精简前：</strong>为了更好地帮助你理解，我们首先需要说明，不同类型的信息可能需要采用不同类型的呈现方式，这样能够在一定程度上改善阅读体验。</p><p><strong>精简后：</strong>解释用正文，比较用表格，状态用卡片。</p><p>删去的是客套与重复限定。若存在会改变结论的真实条件，应当保留并直接写明。</p></details>
+</div>
+</section>
+<section class="section-panel" id="flow" data-toc-label="生成流程" aria-labelledby="flow-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">03</span><div><h2 id="flow-title">从对话到文档</h2><p>从信息结构到交付载体</p></div></div>
+  <div class="section-body">
+  <figure class="diagram" aria-labelledby="flow-caption">
+    <figcaption id="flow-caption">先理清信息含义、依据与限制，再安排阅读层级。遵循用户指定格式；未指定时，仅在 HTML 能改善阅读时生成文档，否则直接回答。</figcaption>
+    <p class="diagram-status" role="status">图示尚未加载；可阅读上方说明或展开源码。</p>
+    <div class="diagram-canvas" role="img" aria-label="回答格式选择流程" hidden></div>
+    <details class="diagram-source"><summary>查看流程图源码</summary><pre><code>flowchart TD
+      A[理清含义与依据] --> A1[安排阅读层级]
+      A1 --> B{用户指定格式？}
+      B -->|是| C[遵循指定格式]
+      B -->|否| D[判断阅读与图形表达收益]
+      D --> E{HTML 能明显改善阅读？}
+      E -->|是| F[生成 HTML 并打开预览]
+      E -->|否| G[在对话中直接回答]
+      F --> H[对话保留简短结论与文档入口]</code></pre></details>
+  </figure>
+  <aside class="callout warn"><strong>网络不可用时</strong><p>正文、表格与折叠仍可阅读。流程图依赖联网加载；加载失败时保留这段流程说明和可展开源码。</p></aside>
+</div>
+</section>
+<section class="section-panel" id="followup" data-toc-label="后续更新" aria-labelledby="followup-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">04</span><div><h2 id="followup-title">继续讨论时，维护同一份结论</h2><p>保持结论、依据与关联图示一致</p></div></div>
+  <div class="section-body">
+  <p class="prose">术语解释等短追问留在对话中。新增事实、修改方案或纠错时，先读取已有文档，再更新原文件及相关图表，保持入口稳定。不同主题创建独立文件；需要保留历史时再另存版本。</p>
+  <details><summary>查看一个文档更新示例</summary><p>假设原文的预算是 20 万元，用户修正为 30 万元并要求调整方案：更新预算、受影响的计算、比较表与推荐结论，并保留原文件链接。不要只在末尾追加“预算已改”，留下冲突的旧结论。</p><p class="muted">这里的金额是演示数据，不代表实际项目预算。</p></details>
+</div>
+</section>
+<section class="section-panel" id="usage" data-toc-label="使用方式" aria-labelledby="usage-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">05</span><div><h2 id="usage-title">如何使用</h2><p>显式调用与当前能力边界</p></div></div>
+  <div class="section-body">
+  <p class="prose">长篇分析或复杂报告可由技能自动判断，也可以显式调用：</p>
+  <pre><code>请使用 $human-interface-language 比较这三个方案，说明关键差异、风险和推荐理由。</code></pre>
+  <p class="prose">文档支持全部展开、全部收起，以及浏览器打印。打印时补充材料会展开，退出打印后恢复原来的阅读状态。当前只提供阅读控制，修订继续通过对话完成；没有批注、反馈回传或确认流程。</p>
+  <details><summary>查看本页的信息来源与用途</summary><p>本页依据你已确认的 HIL 表达约定制作，用于展示排版与阅读行为，不是外部研究报告。内容没有引用未经核查的外部统计资料。</p></details>
+</div>
+</section>

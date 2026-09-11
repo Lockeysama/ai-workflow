@@ -1,0 +1,6 @@
+interface:
+  display_name: "HIL · Human Interface Language"
+  short_description: "面向人类理解与判断的 AI 表达语言，将复杂内容组织为清晰、分层的 HTML 文档"
+  default_prompt: "请使用 $human-interface-language 按我的阅读与判断需要组织本次回答，保留关键依据和限制，并在有助于阅读时生成和打开 HTML 文档。"
+policy:
+  allow_implicit_invocation: true
