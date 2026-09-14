@@ -1,0 +1,6 @@
+interface:
+  display_name: "HAIKL Knowledge Capture"
+  short_description: "用 HIL 整理内容并安全写入 human ai knowledge"
+  default_prompt: "请使用 $haikl-knowledge-capture 整理本次内容，并在我明确要求时搜索、更新或写入 haikl。"
+policy:
+  allow_implicit_invocation: true

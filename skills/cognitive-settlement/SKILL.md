@@ -171,6 +171,8 @@ description: >
 
 ### 笔记与沉淀
 
+如果用户明确要求保存到 human ai knowledge，可以把结算结果交给 `haikl-knowledge-capture`：先按 HIL 统一整理，再由该 Skill 搜索、去重并写入 haikl。没有明确保存意图时，不要自动写入知识库。
+
 区分：
 
 - 当下帮助思考的消耗型脚手架；

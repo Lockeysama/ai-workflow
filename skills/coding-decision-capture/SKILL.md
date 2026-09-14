@@ -12,10 +12,11 @@ description: >
 
 ## 与其他 Skill 的关系
 
-这是编码场景的工作流入口，不是运行时一定会自动调用其他 Skill 的编排器：
+这是编码场景的内容入口，不是运行时一定会自动调用其他 Skill 或 MCP 的编排器：
 
 - 需要判断取舍、识别未知项或定义验证时，采用 `cognitive-settlement` 的判断方法；
 - 需要交付长文、评审文档或可读 HTML 时，采用 `human-interface-language` 的表达约定；
+- 用户明确要求保存到 human ai knowledge 时，交给 `haikl-knowledge-capture` 做 HIL 整理和 MCP 持久化；
 - 如果只是捕获事实，不要为了完整而强行进入这两个阶段。
 
 ## 先判断是否值得捕获
