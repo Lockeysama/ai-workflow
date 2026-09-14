@@ -118,6 +118,31 @@ def inspect(source, document=True):
         if n.has('section-panel'):
             if not any(c.has('section-head') for c in children) or not any(c.has('section-body') for c in children):
                 issue(errors, 'panel-parts', '已使用 section-panel，但缺少直接子元素 section-head / section-body。')
+        if n.has('hil-tabs'):
+            descendants = list(n.walk())
+            tablist = next((c for c in descendants if c.attrs.get('role') == 'tablist'), None)
+            tabs = [c for c in descendants if c.attrs.get('role') == 'tab']
+            panels = [c for c in descendants if c.attrs.get('role') == 'tabpanel']
+            if tablist is None or len(tabs) < 2 or len(tabs) != len(panels):
+                issue(errors, 'tabs-structure', '章节 tab 需要 tablist、至少两个 tab，并为每个 tab 提供对应 tabpanel。')
+            for tab in tabs:
+                target = tab.attrs.get('aria-controls') or ''
+                if target not in ids:
+                    issue(errors, 'tabs-control-target', 'tab 的 aria-controls 不存在：' + target)
+            for panel in panels:
+                target = panel.attrs.get('aria-labelledby') or ''
+                if target not in ids:
+                    issue(errors, 'tabs-label-target', 'tabpanel 的 aria-labelledby 不存在：' + target)
+        if 'data-hil-decision' in n.attrs:
+            if not any(c.has('decision-summary') or 'data-hil-decision-summary' in c.attrs for c in n.walk()):
+                issue(errors, 'decision-summary-missing', '标记为判断型章节的内容缺少 decision-summary。')
+        if n.has('decision-summary') or 'data-hil-decision-summary' in n.attrs:
+            descendants = list(n.walk())
+            roles = {c.attrs.get('data-decision-role') for c in descendants}
+            required = {'conclusion', 'evidence', 'boundary', 'next'}
+            missing = sorted(required - roles)
+            if missing:
+                issue(errors, 'decision-summary-roles', '判断摘要缺少语义项：' + '、'.join(missing))
         if n.has('diagram'):
             descendants = list(n.walk())
             if not any(c.tag == 'figcaption' and c.text().strip() for c in descendants):
@@ -133,15 +158,31 @@ def inspect(source, document=True):
             issue(warnings, 'dense-section', '章节有连续多段正文，请检查默认阅读量；无需为消除提示拆碎论述。')
         if n.tag == 'table' and not any(c.tag == 'th' for c in n.walk()):
             issue(warnings, 'table-headings', '表格缺少标题单元格，请判断是否需要补充比较维度。')
+        if n.tag == 'table':
+            table_nodes = list(n.walk())
+            label = next((c.text().strip() for c in table_nodes if c.tag == 'caption'), '')
+            label = label or n.attrs.get('id') or n.text().strip()[:48]
+            rows = [c for c in table_nodes if c.tag == 'tr']
+            columns = max((sum(isinstance(c, Node) and c.tag in ('td', 'th')
+                               for c in row.children) for row in rows), default=0)
+            if columns >= 4 and not any(a.has('table-scroll') for a in ancestors(n)):
+                issue(warnings, 'wide-table', f'表格「{label}」有 {columns} 列且未使用 table-scroll；检查窄屏溢出，自定义滚动布局可保留。')
+            long_cells = [c for c in table_nodes if c.tag == 'td' and len(c.text().strip()) > 100]
+            if len(long_cells) >= 2:
+                issue(warnings, 'dense-table', f'表格「{label}」有 {len(long_cells)} 个长文字单元格；检查是否应改成短比较表＋逐项说明。不要截断必要条件。')
     if document:
         if not any(n.tag == 'title' and n.text().strip() for n in nodes):
             issue(errors, 'document-title', '文档缺少非空 title。')
         if not any(n.tag == 'main' for n in nodes):
             issue(errors, 'document-main', '文档缺少 main 主体。')
+        titles = [n.text().strip() for n in nodes if n.tag == 'h1']
+        if len(titles) > 1:
+            issue(warnings, 'multiple-h1', '文档出现多个 h1：' + ' / '.join(titles) + '。--title 已生成文档标题，请检查正文是否重复。')
         headings = [n for n in nodes if n.tag == 'h2']
+        has_tabs = any(n.has('hil-tabs') for n in nodes)
         if headings and not any(n.has('section-panel') for n in nodes):
             issue(warnings, 'plain-sections', '未使用默认章节面板；自定义或论文式排版可以保留。')
-        if len(headings) >= 3 and not any(n.has('toc') for n in nodes):
+        if len(headings) >= 3 and not any(n.has('toc') for n in nodes) and not has_tabs:
             issue(warnings, 'navigation', '多个主要章节没有目录，请判断导航价值。')
     return parsed, {'ok': not errors, 'errors': errors, 'warnings': warnings,
                     'scope': '仅检查结构与阅读提示，不证明事实、渲染、链接联网可达性或自动触发质量。'}
@@ -177,19 +218,21 @@ def build(content, title, summary='', category='', meta='', footer='', toc='auto
             target.attrs['id'] = unique_id(used, 'hil-section-' + str(i + 1))
         if not any(k == target.attrs['id'] for k, _ in entries):
             entries.append((target.attrs['id'], heading.attrs.get('data-toc-label') or target.attrs.get('data-toc-label') or heading.text().strip()))
+    has_tabs = any(n.has('hil-tabs') for n in nodes)
     show_toc = toc == 'always' or (toc == 'auto' and len(entries) >= 2)
     if show_toc and not entries:
         raise ValueError('要求目录，但正文没有 h2；请提供实际章节或选择 --toc none。')
     nav = ''
     if show_toc:
-        nav = '<nav class="toc" aria-label="文档目录"><strong>阅读目录</strong><ul>'
+        tab_toc_attrs = ' data-hil-tab-toc hidden' if has_tabs else ''
+        nav = '<nav class="toc"' + tab_toc_attrs + ' aria-label="文档目录"><strong>阅读目录</strong><ul>'
         for i, (key, label) in enumerate(entries, 1):
             nav += '<li><a href="#' + escape(key, quote=True) + '"><span aria-hidden="true">' + f'{i:02d}' + '</span>' + escape(label) + '</a></li>'
         nav += '</ul></nav>'
     template = (Path(__file__).resolve().parent.parent / 'assets/report.html').read_text(encoding='utf-8')
     template = template.replace('lang="zh-CN"', 'lang="' + escape(lang, quote=True) + '"')
     if lang.lower().startswith('en'):
-        translations = {'收起目录':'Hide contents', '展开目录':'Show contents', '阅读操作':'Reading controls', '全部展开':'Expand all', '全部收起':'Collapse all', '打印 / 保存 PDF':'Print / Save PDF', '图示暂时无法显示，请阅读图示说明；需要时可展开源码。':'Diagram unavailable. Read its description or expand the source.', '文档目录':'Document contents', '阅读目录':'Contents'}
+        translations = {'收起目录':'Hide contents', '展开目录':'Show contents', '阅读操作':'Reading controls', '长文模式':'Long-form mode', 'Tab 模式':'Tab mode', '展开全部细节':'Expand details', '收起全部细节':'Collapse details', '打印 / 保存 PDF':'Print / Save PDF', '图示暂时无法显示，请阅读图示说明；需要时可展开源码。':'Diagram unavailable. Read its description or expand the source.', '文档目录':'Document contents', '阅读目录':'Contents'}
         for original, translated in translations.items():
             template = template.replace(original, translated)
             nav = nav.replace(original, translated)

@@ -7,6 +7,7 @@
 | 技能 | 用途 | 显式调用 |
 | --- | --- | --- |
 | HIL · Human Interface Language | 面向人类理解与判断组织复杂回答，按需生成有分层、折叠、图表与悬浮目录的 HTML 文档 | Codex：`$human-interface-language` |
+| Cognitive Settlement | 将问题、依据、暂时判断、边界、行动与回看条件整理成可确认的认知结算单 | `cognitive-settlement` |
 
 HIL 固定阅读控件，校验结构完整性，保留内容与布局的选择空间。目录默认在右下角展开，悬浮球始终可见，点击同一个球切换展开与收起。结构错误阻止生成；长段落或自定义版式只给提示。
 
