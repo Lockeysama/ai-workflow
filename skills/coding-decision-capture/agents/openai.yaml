@@ -1,0 +1,6 @@
+interface:
+  display_name: "Coding Decision Capture"
+  short_description: "从编码、调试和评审中提取可复用的技术决策"
+  default_prompt: "请使用 $coding-decision-capture 整理这次实现中的背景、取舍、依据、验证结果和未来重开条件。"
+policy:
+  allow_implicit_invocation: true

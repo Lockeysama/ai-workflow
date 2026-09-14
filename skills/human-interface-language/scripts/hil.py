@@ -202,10 +202,39 @@ def unique_id(used, stem):
     return value
 
 
+def apply_reading_structure(parsed):
+    """Normalize chapter panels and auto-enable tabs for independent flat chapters."""
+    nodes = [n for n in parsed.root.children if isinstance(n, Node)]
+    chapters = [n for n in nodes if n.tag == 'section' and any(c.has('section-head') for c in n.children if isinstance(c, Node))]
+    for chapter in chapters:
+        chapter.attrs['class'] = ' '.join(dict.fromkeys((chapter.attrs.get('class') or '').split() + ['section-panel']))
+    explicit_tabs = any(n.has('hil-tabs') for n in parsed.root.walk())
+    no_tabs = any('data-hil-no-tabs' in n.attrs for n in parsed.root.walk())
+    if len(chapters) < 3 or explicit_tabs or len(chapters) != len(nodes):
+        return
+    recommended = 'long' if no_tabs else 'tab'
+    tabs = Node('section', [('class', 'hil-tabs'), ('data-hil-tabs', ''), ('data-recommended-mode', recommended), ('aria-label', '章节阅读')], parsed.root)
+    tablist = Node('div', [('class', 'hil-tablist'), ('role', 'tablist'), ('aria-label', '章节')], tabs)
+    panels = Node('div', [('class', 'hil-tabpanels')], tabs)
+    for i, chapter in enumerate(chapters, 1):
+        heading = next((c for c in chapter.walk() if c.tag == 'h2'), None)
+        label = heading.text().strip() if heading else f'第 {i} 章'
+        tab_id, panel_id = f'hil-tab-{i}', chapter.attrs.get('id') or f'hil-panel-{i}'
+        chapter.attrs['id'] = panel_id
+        chapter.attrs['role'] = 'tabpanel'
+        chapter.attrs['aria-labelledby'] = tab_id
+        button = Node('button', [('type','button'), ('role','tab'), ('id',tab_id), ('aria-controls',panel_id), ('aria-selected','true' if i == 1 else 'false')], tablist)
+        button.children.append(label)
+        tablist.children.append(button)
+        panels.children.append(chapter)
+    tabs.children.extend([tablist, panels])
+    parsed.root.children = [tabs]
+
 def build(content, title, summary='', category='', meta='', footer='', toc='auto', extra_css='', lang='zh-CN'):
     parsed = Parser(content)
     if parsed.problems:
         raise ValueError('; '.join(parsed.problems))
+    apply_reading_structure(parsed)
     nodes = list(parsed.root.walk())
     if any(n.tag in ('html', 'head', 'body', 'main') or n.has('toc') or n.has('toc-fab') for n in nodes):
         raise ValueError('输入应为正文片段，不含整页骨架或目录控件；这些由生成器提供。')
@@ -232,7 +261,7 @@ def build(content, title, summary='', category='', meta='', footer='', toc='auto
     template = (Path(__file__).resolve().parent.parent / 'assets/report.html').read_text(encoding='utf-8')
     template = template.replace('lang="zh-CN"', 'lang="' + escape(lang, quote=True) + '"')
     if lang.lower().startswith('en'):
-        translations = {'收起目录':'Hide contents', '展开目录':'Show contents', '阅读操作':'Reading controls', '长文模式':'Long-form mode', 'Tab 模式':'Tab mode', '展开全部细节':'Expand details', '收起全部细节':'Collapse details', '打印 / 保存 PDF':'Print / Save PDF', '图示暂时无法显示，请阅读图示说明；需要时可展开源码。':'Diagram unavailable. Read its description or expand the source.', '文档目录':'Document contents', '阅读目录':'Contents'}
+        translations = {'收起目录':'Hide contents', '展开目录':'Show contents', '阅读操作':'Reading controls', '长文模式':'Long-form mode', 'Tab 模式':'Tab mode', '展开全部细节':'Expand details', '收起全部细节':'Collapse details', '图示暂时无法显示，请阅读图示说明；需要时可展开源码。':'Diagram unavailable. Read its description or expand the source.', '文档目录':'Document contents', '阅读目录':'Contents'}
         for original, translated in translations.items():
             template = template.replace(original, translated)
             nav = nav.replace(original, translated)

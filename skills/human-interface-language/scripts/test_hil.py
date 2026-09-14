@@ -91,13 +91,20 @@ class HilTests(unittest.TestCase):
         self.assertIn('class="toc" data-hil-tab-toc hidden', output)
         self.assertIn('data-action="long-mode"', output)
         self.assertIn('data-action="tab-mode"', output)
-        self.assertIn('data-action="source-mode"', output)
+        self.assertNotIn('data-action="source-mode"', output)
         self.assertIn('data-action="copy"', output)
-        self.assertIn('data-action="copy-source"', output)
+        self.assertNotIn('data-action="copy-source"', output)
         self.assertIn('data-hil-tab-prev', output)
         self.assertIn('data-hil-tab-next', output)
-        self.assertIn('data-hil-source-panel', output)
+        self.assertNotIn('data-hil-source-panel', output)
         self.assertTrue(hil.inspect(output)[1]['ok'])
+
+    def test_auto_tabs_and_panel_normalization(self):
+        content = ''.join(f'<section id="s{i}"><div class="section-head"><h2>章节 {i}</h2></div><div class="section-body"><p>内容</p></div></section>' for i in range(1, 4))
+        output = hil.build(content, '标题')
+        self.assertIn('data-hil-tabs', output)
+        self.assertEqual(output.count('class="section-panel"'), 3)
+        self.assertIn('role="tabpanel"', output)
 
     def test_invalid_tabs_scaffold(self):
         tabs = '<section class="hil-tabs" data-hil-tabs><div role="tablist"><button role="tab" id="tab-a" aria-controls="missing">A</button></div></section>'
