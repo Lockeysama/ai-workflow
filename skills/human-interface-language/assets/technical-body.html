@@ -28,9 +28,8 @@
     <dl class="rule-list">
       <div class="rule-row"><dt>请求边界</dt><dd>接口只校验输入、分配任务 ID 并保存待执行记录；不在 HTTP 请求内读取全部数据。</dd></div>
       <div class="rule-row"><dt>完整性判定</dt><dd>生成时使用固定的数据快照；先写临时对象，确认行数与文件校验值后再提交结果。</dd></div>
-      <div class="rule-row"><dt>对象存储访问凭据与路径保护</dt><dd>示例存储路径为 <code>exports/tasks/task_demo_0123456789abcdefghijklmnopqrstuvwxyz/attempts/attempt_demo_0123456789abcdefghijklmnopqrstuvwxyz/result.csv</code>。此类内部位置只供执行器使用；用户接口返回短时下载授权，不暴露存储凭据。</dd></div>
     </dl>
-    <p>按执行先后阅读<a href="#export-process">生成过程</a>；按调用任务查阅<a href="#create-export">创建接口</a>和<a href="#export-record">结果记录</a>。</p>
+    <p>按执行先后阅读<a href="#export-process">执行过程</a>；按调用任务查阅<a href="#create-export">创建接口</a>和<a href="#export-record">结果记录</a>。存储访问与凭据规则见<a href="#export-contract">接口与数据说明</a>。</p>
   </div>
 </section>
 <section class="section-panel" id="export-process" aria-labelledby="export-process-title">
@@ -98,6 +97,7 @@
         <div class="rule-row"><dt>查询入口</dt><dd><code>GET /example/v1/export-tasks/{task_id}</code> 返回当前状态；只能查询属于当前调用方的任务。</dd></div>
         <div class="rule-row"><dt>结果边界</dt><dd>只有 <code>completed</code> 状态具有可用结果信息。下载授权过期后需要重新申请；任务过期或取消后拒绝签发新授权。</dd></div>
         <div class="rule-row"><dt>失败表达</dt><dd><code>failed</code> 状态包含稳定的失败分类。响应不返回内部路径、访问凭据或原始异常堆栈；是否恢复由调用方决定。</dd></div>
+        <div class="rule-row"><dt>对象存储访问凭据与路径保护</dt><dd>示例存储路径为 <code>exports/tasks/task_demo_0123456789abcdefghijklmnopqrstuvwxyz/attempts/attempt_demo_0123456789abcdefghijklmnopqrstuvwxyz/result.csv</code>。此类内部位置只供执行器使用；用户接口返回短时下载授权，不暴露存储凭据。</dd></div>
       </dl>
       <details>
         <summary>任务记录字段：状态、结果与失败原因</summary>

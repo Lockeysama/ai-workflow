@@ -253,7 +253,9 @@ def build(content, title, summary='', category='', meta='', footer='', toc='auto
         raise ValueError('要求目录，但正文没有 h2；请提供实际章节或选择 --toc none。')
     nav = ''
     if show_toc:
-        tab_toc_attrs = ' data-hil-tab-toc hidden' if has_tabs else ''
+        # Keep the TOC in the initial HTML: tab mode collapses it with a class once the script runs,
+        # so a failed script still leaves navigation reachable.
+        tab_toc_attrs = ' data-hil-tab-toc' if has_tabs else ''
         nav = '<nav class="toc"' + tab_toc_attrs + ' aria-label="文档目录"><strong>阅读目录</strong><ul>'
         for i, (key, label) in enumerate(entries, 1):
             nav += '<li><a href="#' + escape(key, quote=True) + '"><span aria-hidden="true">' + f'{i:02d}' + '</span>' + escape(label) + '</a></li>'

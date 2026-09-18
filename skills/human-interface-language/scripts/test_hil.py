@@ -65,6 +65,35 @@ class HilTests(unittest.TestCase):
         self.assertTrue(report['ok'])
         self.assertEqual(report['warnings'], [])
 
+    def test_initial_navigation_and_chapters_do_not_require_scripts(self):
+        # Check the generated document contract, not CSS spelling or pixel choices.
+        # Alignment, fallback flow and print behavior need real browser checks.
+        for count in (2, 3):
+            with self.subTest(chapters=count):
+                fragment = ''.join(
+                    f'<section class="section-panel" id="chapter-{i}">'
+                    f'<div class="section-head"><h2>章节 {i}</h2></div>'
+                    f'<div class="section-body"><p>必要条件 {i}</p>'
+                    f'<details><summary>依据 {i}</summary><p>完整证据 {i}</p>'
+                    f'</details></div></section>' for i in range(count))
+                parsed, report = hil.inspect(hil.build(fragment, '导航降级'))
+                self.assertTrue(report['ok'], report['errors'])
+                nodes = list(parsed.root.walk())
+                toc = next(n for n in nodes if n.tag == 'nav' and n.has('toc'))
+                self.assertEqual([n.attrs['href'] for n in toc.walk() if n.tag == 'a'],
+                                 [f'#chapter-{i}' for i in range(count)])
+                chapters = [n for n in nodes if n.has('section-panel')]
+                self.assertEqual(len(chapters), count)
+                self.assertEqual(sum(n.attrs.get('role') == 'tabpanel' for n in chapters),
+                                 count if count >= 3 else 0)
+                for node in [toc, *chapters]:
+                    for ancestor in [node, *hil.ancestors(node)]:
+                        self.assertNotIn('hidden', ancestor.attrs)
+                        self.assertNotEqual(ancestor.attrs.get('aria-hidden'), 'true')
+                for i, chapter in enumerate(chapters):
+                    self.assertIn(f'必要条件 {i}', chapter.text())
+                    self.assertIn(f'完整证据 {i}', chapter.text())
+
     def test_technical_example_preserves_semantics_in_tabs(self):
         fragment = (Path(hil.__file__).resolve().parent.parent / 'assets/technical-body.html').read_text(encoding='utf-8')
         source, source_report = hil.inspect(fragment, document=False)
@@ -165,7 +194,8 @@ class HilTests(unittest.TestCase):
           <section id="panel-b" role="tabpanel" aria-labelledby="tab-b"><h2>第二章</h2>B 内容</section>
         </section>'''
         output = hil.build(tabs, '标题')
-        self.assertIn('class="toc" data-hil-tab-toc hidden', output)
+        self.assertIn('class="toc" data-hil-tab-toc', output)
+        self.assertNotIn('data-hil-tab-toc hidden', output)
         self.assertIn('data-action="long-mode"', output)
         self.assertIn('data-action="tab-mode"', output)
         self.assertNotIn('data-action="source-mode"', output)

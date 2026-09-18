@@ -20,7 +20,7 @@
     .document-layout{display:block;min-width:0}.document-body{min-width:0;max-width:1120px;margin:0 auto}
     .toc{position:fixed;z-index:20;right:24px;bottom:84px;width:196px;max-height:calc(100vh - 108px);max-width:calc(100vw - 48px);overflow-y:auto;font-size:.875rem;padding:12px;background:rgba(255,255,255,.96);border:1px solid #cbd7e6;border-radius:12px;box-shadow:0 8px 28px #24304418;backdrop-filter:blur(10px);transition:opacity .16s ease,transform .16s ease}
     .toc>strong{display:block;font-size:.75rem;color:var(--muted);letter-spacing:.1em;padding:0 12px 12px}.toc ul{list-style:none;margin:0;padding:0;display:grid;gap:5px}.toc li{margin:0}.toc a{display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 12px;border:1px solid transparent;border-radius:8px;color:var(--muted);text-decoration:none}.toc a span{flex:0 0 1.8em;white-space:nowrap;font-size:.75rem;font-variant-numeric:tabular-nums;color:#718099}.toc a:hover{background:#e4eaf2;color:var(--ink)}.toc a[aria-current="location"]{background:#fff;border-color:#d4dfed;color:var(--accent);font-weight:650;box-shadow:0 2px 4px #23344806}.toc-note{border-top:1px solid var(--line);margin:20px 12px 0;padding-top:14px;font-size:.78rem;color:var(--muted)}
-    .toc>strong{padding-right:12px}.toc.is-collapsed{opacity:0;transform:translateX(14px);pointer-events:none}.toc-fab{position:fixed;z-index:21;right:24px;bottom:24px;width:46px;height:46px;padding:0;border:1px solid #cbd7e6;border-radius:50%;background:rgba(255,255,255,.97);box-shadow:0 8px 24px #24304420;color:var(--accent);font-size:1.05rem;cursor:pointer}.toc-fab:hover{border-color:var(--accent);transform:translateY(-1px)}
+    .toc>strong{padding-right:12px}.toc.is-collapsed{display:none}.toc-fab{position:fixed;z-index:21;right:24px;bottom:24px;width:46px;height:46px;padding:0;border:1px solid #cbd7e6;border-radius:50%;background:rgba(255,255,255,.97);box-shadow:0 8px 24px #24304420;color:var(--accent);font-size:1.05rem;cursor:pointer}.toc-fab:hover{border-color:var(--accent);transform:translateY(-1px)}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:0 0 14px}.mode-switch-wrap{display:flex;align-items:center;gap:6px}.mode-switch{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:190px;padding:3px;border:1px solid #bdcde3;border-radius:10px;background:#e8eef8;isolation:isolate}.mode-switch-thumb{position:absolute;z-index:-1;inset:3px auto 3px 3px;width:calc(50% - 3px);border-radius:7px;background:#fff;box-shadow:0 2px 6px #24304418;transition:transform .2s ease}.mode-switch[data-active="long"] .mode-switch-thumb{transform:translateX(100%)}.mode-switch button{position:relative;z-index:1;border:0;background:transparent;color:var(--muted);padding:7px 12px;min-height:34px;font-size:.8rem}.mode-switch button[aria-checked="true"]{color:var(--accent);font-weight:750}.mode-switch button:focus-visible{z-index:2}.mode-recommendation{white-space:nowrap;color:var(--muted);font-size:.72rem}
     .hil-tabs{margin:0 0 24px}.hil-tab-controls{display:grid;gap:12px;margin:0 0 16px}.hil-tablist{display:flex;flex-wrap:wrap;gap:6px;padding:3px;border-bottom:1px solid var(--line)}.hil-tablist [role="tab"]{flex:0 0 auto;border:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0;background:transparent;color:var(--muted);padding:10px 14px;min-height:42px;cursor:pointer}.hil-tablist [role="tab"]:hover{background:#edf2f9;color:var(--ink)}.hil-tablist [role="tab"][aria-selected="true"]{border-bottom-color:var(--accent);background:#edf3ff;color:var(--accent);font-weight:650}.hil-tab-actions{display:none}.hil-tabs.is-ready [role="tabpanel"][hidden]{display:none}.hil-tabs.is-expanded .hil-tab-controls,.hil-tabs.is-expanded>[role="tablist"]{display:none}.hil-tabs .section-panel:last-child{margin-bottom:0}
     .mode-switch[data-options="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}.mode-switch[data-options="2"] .mode-switch-thumb{width:calc(50% - 3px)}
@@ -34,7 +34,12 @@
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:16px}.card{background:#fff;border:1px solid #e0e7f0;border-radius:9px;padding:16px;min-width:0}.card p{font-size:.92rem}.card p:last-child{margin-bottom:0}
     .label{display:inline-block;font-size:.73rem;font-weight:650;color:var(--accent);background:#e9f0fc;border-radius:5px;padding:2px 7px;margin-bottom:9px}.keyword,.term{display:inline;padding:1px 5px;border-radius:4px;background:#fff1b8;color:#5f4600;font-weight:650;box-decoration-break:clone;-webkit-box-decoration-break:clone}.keyword{border-bottom:2px solid #d4a72c}.term{background:#e8f1ff;color:#24508f;border-bottom:1px solid #8db2e3}mark{padding:1px 4px;border-radius:4px;background:#fff1b8;color:#5f4600;font-weight:650;box-decoration-break:clone;-webkit-box-decoration-break:clone}.good{--accent:var(--good)}.warn{--accent:var(--warn)}.danger{--accent:var(--danger)}.good .label{background:#e7f2ec}.warn .label{background:#fff0d4}.danger .label{background:#fbe8eb}
     .callout{border-left:3px solid var(--accent);background:#f3f6fb;padding:14px 18px;margin:20px 0;border-radius:0 8px 8px 0;font-size:.92rem}.callout.warn{background:#fff8e9}.callout.danger{background:#fff1f3}.callout.good{background:#eef7f1}.callout>strong{color:var(--accent)}.callout p{margin:4px 0 0}
-    .rule-list{margin:16px 0;display:grid}.rule-row{display:grid;grid-template-columns:7rem minmax(0,1fr);gap:20px;padding:14px 0;border-bottom:1px solid #e6ebf2}.rule-row:first-child{padding-top:0}.rule-row:last-child{border-bottom:0;padding-bottom:0}.rule-row dt{min-width:0;color:#435c7b;font-weight:650}.rule-row dd{min-width:0;max-width:42em;margin:0;color:var(--ink);line-height:1.8}.rule-row dd>:last-child{margin-bottom:0}
+    .rule-list{margin:16px 0;display:grid}.rule-row{display:grid;grid-template-columns:7rem minmax(0,1fr);gap:20px;padding:14px 0;border-bottom:1px solid #e6ebf2}.rule-row:first-child{padding-top:0}.rule-row:last-child{border-bottom:0;padding-bottom:0}.rule-row dt{min-width:0;max-width:7rem;color:#435c7b;font-weight:650}.rule-row dd{min-width:0;max-width:42em;margin:0;color:var(--ink);line-height:1.8}.rule-row dd>:last-child{margin-bottom:0}
+    /* Share the label width within each group; older browsers keep aligned fixed columns. */
+    @supports(grid-template-columns:subgrid){@media(min-width:601px){
+      .rule-list{grid-template-columns:minmax(0,max-content) minmax(0,1fr);column-gap:20px}
+      .rule-list>.rule-row{grid-column:1 / -1;grid-template-columns:subgrid}
+    }}
     /* Native list markers preserve numbering, including ol[start] and li[value]. */
     .step-list{list-style-type:decimal-leading-zero;margin:20px 0;padding-left:2.75rem}.step-list>li{margin:0 0 16px;padding:0 0 16px .35rem;border-bottom:1px solid #e6ebf2}.step-list>li:last-child{margin-bottom:0;padding-bottom:0;border-bottom:0}.step-list>li::marker{color:var(--accent);font-size:.9rem;font-weight:650;font-variant-numeric:tabular-nums}.step-list>li>strong{color:#30445f;font-weight:650}.step-list>li>p{max-width:42em;margin:.4rem 0 0}
     .subsection{min-width:0;margin-top:28px;scroll-margin-top:24px}.subsection:first-child{margin-top:0}.subsection+.subsection{padding-top:24px;border-top:1px solid var(--line)}.subsection>h3{font-size:1.12rem;margin-bottom:12px}.subsection>p{max-width:42em}.subsection>:last-child{margin-bottom:0}
@@ -42,17 +47,37 @@
     .table-scroll,.diagram-canvas{max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:var(--paper)}table{width:100%;border-collapse:collapse;font-size:.9rem;text-align:left}caption{text-align:left;padding:12px 14px;color:var(--muted);font-size:.8rem}th,td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:top;min-width:7rem}th{background:#f0f4f9;font-weight:650}tbody th{background:#f8fafd}
     figure{margin:0 0 20px}figcaption{font-size:.9rem;font-weight:500;margin-bottom:12px;color:var(--muted)}.diagram-status{color:var(--muted);font-size:.83rem}.diagram-canvas{padding:18px;background:#fafbfd}.diagram-canvas svg{display:block;min-width:32rem;max-width:100%;height:auto;margin:auto}
     pre{font:.82rem/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-x:auto;background:#eef2f7;padding:14px;border-radius:7px;white-space:pre;max-width:100%;margin:12px 0}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    /* Screen only: printing shows collapsed evidence instead (see @media print). */
+    @media screen{details:not([open])>:not(summary){display:none}}
     /* Structural fallbacks also serve intentionally continuous prose. */
     .document-body>h2,.document-body>section:not(.section-panel)>h2{margin:32px 0 14px}
     .document-body>p,.document-body>section:not(.section-panel)>p{max-width:42em}
     .option-detail+.option-detail{margin-top:28px;padding-top:24px;border-top:1px solid var(--line)}
     .option-detail{scroll-margin-top:24px}.option-detail>p{max-width:42em}
-    :lang(en) .prose,:lang(en) .takeaway,:lang(en) .lead,:lang(en) .rule-row dd,:lang(en) .step-list>li>p,:lang(en) .subsection>p{max-width:72ch}
+    /* Chinese body copy is capped in em (about 42 CJK characters); English uses a character measure. Keep new components in both lists. */
+    :lang(en) .prose,:lang(en) .takeaway,:lang(en) .lead,:lang(en) .rule-row dd,:lang(en) .step-list>li>p,:lang(en) .subsection>p,:lang(en) .section-body>p,:lang(en) .document-body>p{max-width:72ch}
     @media screen and (min-width:1200px){main:has(.document-layout.is-tab-reading){max-width:1360px;padding-right:32px}}
     footer{max-width:1120px;margin:12px auto 0;border-top:1px solid var(--line);padding-top:16px;font-size:.8rem;color:var(--muted)}[hidden]{display:none!important}
     @media(max-width:900px){main{padding:24px 18px 36px}.document-body{max-width:none}.toc{right:14px;bottom:74px;max-height:calc(100vh - 88px)}.toc-fab{right:14px;bottom:14px}.section-panel{scroll-margin-top:16px}}
-    @media(max-width:600px){body{font-size:16px}.document-header{margin-bottom:16px;padding-bottom:18px}.section-head{padding:16px;gap:10px}.section-head p{font-size:.82rem}.section-head h2{font-size:1.13rem}.section-index{height:30px;flex-basis:30px}.cards,.split,.overview-grid{grid-template-columns:minmax(0,1fr)}.split{gap:18px}.rule-row{grid-template-columns:minmax(0,1fr);gap:4px;padding:12px 0}.step-list{padding-left:2.25rem}.subsection{margin-top:24px}.subsection+.subsection{padding-top:20px}.takeaway{font-size:1.04rem}.card{padding:14px}.callout{padding:12px 14px}.document-overview{padding:18px 16px}.decision-summary{padding:6px 14px}.decision-summary-item{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:10px 0}.toolbar{justify-content:flex-start}.mode-switch{min-width:0;width:100%;max-width:300px}.hil-tablist [role="tab"]{padding-inline:12px}}
-    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.toc{transition:none}}
+    @media(max-width:600px){body{font-size:16px}.document-header{margin-bottom:16px;padding-bottom:18px}.section-head{padding:16px;gap:10px}.section-head p{font-size:.82rem}.section-head h2{font-size:1.13rem}.section-index{height:30px;flex-basis:30px}.cards,.split,.overview-grid{grid-template-columns:minmax(0,1fr)}.split{gap:18px}.rule-row{grid-template-columns:minmax(0,1fr);gap:4px;padding:12px 0}.rule-row dt{max-width:none}.step-list{padding-left:2.25rem}.subsection{margin-top:24px}.subsection+.subsection{padding-top:20px}.takeaway{font-size:1.04rem}.card{padding:14px}.callout{padding:12px 14px}.document-overview{padding:18px 16px}.decision-summary{padding:6px 14px}.decision-summary-item{grid-template-columns:92px minmax(0,1fr);gap:12px;padding:10px 0}.toolbar{justify-content:flex-start}.mode-switch{min-width:0;width:100%;max-width:300px}.hil-tablist [role="tab"]{padding-inline:12px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    /* Start with usable navigation in normal flow, including when scripts fail to start. */
+    .toc:not([data-enhanced="true"]){position:static;width:auto;max-width:1120px;max-height:none;margin:0 auto 24px}
+    .hil-tabs:not(.is-ready) .hil-tab-controls,.hil-tabs:not(.is-ready)>[role="tablist"]{display:none}
+    /* Print: every chapter on paper, controls off it, collapsed details open. Diagram source stays visible until its SVG rendered. */
+    @media print{
+      .toolbar,.toc-fab,.hil-tablist{display:none!important}
+      /* The scroll-positioned TOC is an overlay once its scripted collapse ran; the no-script list stays in flow and prints. */
+      .toc[data-enhanced="true"]{display:none!important}
+      .hil-tabs .section-panel:last-child{margin-bottom:0}
+      [role="tabpanel"][hidden]{display:block!important}
+      details::details-content{content-visibility:visible}
+      .diagram[data-rendered="true"] .diagram-source,.diagram[data-rendered="true"] .diagram-status{display:none!important}
+      .section-panel{box-shadow:none}
+      .section-head,.subsection,.step-list>li,tr,pre,figure,.callout,.decision-summary-item{break-inside:avoid}
+      .table-scroll,.diagram-canvas{overflow:visible}
+      main{max-width:none;padding:0}
+    }
   </style>
 </head>
 <body>
@@ -259,7 +284,6 @@
     document.body.appendChild(fab);
     const setCollapsed = collapsed => {
       toc.classList.toggle('is-collapsed', collapsed);
-      toc.hidden = collapsed;
       toc.inert = collapsed;
       fab.setAttribute('aria-expanded', String(!collapsed));
       toc.setAttribute('aria-hidden', String(collapsed));
@@ -321,6 +345,21 @@
   };
   window.addEventListener('hashchange', revealHashTarget);
   revealHashTarget();
+  // Print opens collapsed details so paper keeps the evidence; the reading state returns afterwards.
+  let restoreAfterPrint = null;
+  window.addEventListener('beforeprint', () => {
+    if (restoreAfterPrint) return;
+    const details = Array.from(document.querySelectorAll('details'));
+    restoreAfterPrint = { mode: currentMode, open: details.map(item => item.open) };
+    details.forEach(item => { item.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    if (!restoreAfterPrint) return;
+    const { mode, open } = restoreAfterPrint;
+    restoreAfterPrint = null;
+    if (mode !== currentMode) return;
+    document.querySelectorAll('details').forEach((item, index) => { item.open = open[index] ?? item.open; });
+  });
   const figures = Array.from(document.querySelectorAll('.diagram'));
   if (!figures.length) return;
   figures.forEach(figure => { const canvas = figure.querySelector('.diagram-canvas'); if (canvas) canvas.tabIndex = 0; });
