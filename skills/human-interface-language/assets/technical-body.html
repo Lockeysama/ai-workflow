@@ -1,0 +1,127 @@
+<section class="section-panel" id="export-design" aria-labelledby="export-design-title" data-hil-decision>
+  <div class="section-head"><span class="section-index" aria-hidden="true">01</span><h2 id="export-design-title">架构判断</h2></div>
+  <div class="section-body">
+    <p class="muted">本页是虚构的“导出任务”排版示例。接口、字段、约束与过程均为演示内容，不代表已实现的服务或经过验证的技术结论。</p>
+    <div class="decision-summary" data-hil-decision-summary aria-label="本章判断摘要">
+      <div class="decision-summary-item" data-decision-role="conclusion"><strong>当前结论</strong><p>示例采用异步导出：接口保存任务，Worker 生成并验证文件，再开放下载。</p></div>
+      <div class="decision-summary-item" data-decision-role="evidence"><strong>主要依据</strong><p>这里假设数据量可变，文件生成可能超过请求等待时间；任务记录用于查询结果和恢复中断。</p></div>
+      <div class="decision-summary-item" data-decision-role="boundary"><strong>适用边界</strong><p>示例只支持单个 CSV 文件；未完成、失败或已取消的任务不返回下载地址。取消阻止后续下载授权，无法追回已经下载的副本。</p></div>
+      <div class="decision-summary-item" data-decision-role="next"><strong>下一步</strong><p>若采用该方案，先验证重复请求、生成中断和取消并发，再确定容量及保留期限。</p></div>
+    </div>
+    <figure class="diagram" aria-labelledby="export-dependencies-caption">
+      <figcaption id="export-dependencies-caption">箭头表示读写依赖：API 与 Worker 共用任务记录，CSV 文件由 Worker 写入文件存储。</figcaption>
+      <p class="diagram-status" role="status">图示尚未加载；可阅读上方关系说明或展开图示源码。</p>
+      <div class="diagram-canvas" tabindex="0" role="img" aria-label="导出组件对任务存储与文件存储的读写依赖" hidden></div>
+      <details class="diagram-source">
+        <summary>查看导出职责关系图源码</summary>
+        <pre><code>flowchart LR
+  api["API"]
+  worker["Worker"]
+  tasks[("任务存储")]
+  files[("文件存储")]
+  api --&gt;|"创建 / 查询"| tasks
+  worker --&gt;|"租约 / 状态 / 结果"| tasks
+  worker --&gt;|"写入 / 校验 / 清理"| files
+</code></pre>
+      </details>
+    </figure>
+    <dl class="rule-list">
+      <div class="rule-row"><dt>请求边界</dt><dd>接口只校验输入、分配任务 ID 并保存待执行记录；不在 HTTP 请求内读取全部数据。</dd></div>
+      <div class="rule-row"><dt>完整性判定</dt><dd>生成时使用固定的数据快照；先写临时对象，确认行数与文件校验值后再提交结果。</dd></div>
+      <div class="rule-row"><dt>对象存储访问凭据与路径保护</dt><dd>示例存储路径为 <code>exports/tasks/task_demo_0123456789abcdefghijklmnopqrstuvwxyz/attempts/attempt_demo_0123456789abcdefghijklmnopqrstuvwxyz/result.csv</code>。此类内部位置只供执行器使用；用户接口返回短时下载授权，不暴露存储凭据。</dd></div>
+    </dl>
+    <p>按执行先后阅读<a href="#export-process">生成过程</a>；按调用任务查阅<a href="#create-export">创建接口</a>和<a href="#export-record">结果记录</a>。</p>
+  </div>
+</section>
+<section class="section-panel" id="export-process" aria-labelledby="export-process-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">02</span><h2 id="export-process-title">执行过程</h2></div>
+  <div class="section-body">
+    <p>以下六步描述一次正常执行，两阶段使用连续编号。任务受理后的执行失败会保留任务状态，供调用方查询；恢复执行必须先确认前一次写入已经结束。</p>
+    <section class="subsection" id="accept-export" aria-labelledby="accept-export-title">
+      <h3 id="accept-export-title">阶段一：受理请求</h3>
+      <ol class="step-list" id="accept-export-steps">
+        <li><strong>校验输入</strong><p>确认导出范围、CSV 格式与请求幂等键有效；不满足约束时直接返回错误。</p></li>
+        <li><strong>保存待执行任务</strong><p>在同一事务中写入任务、幂等键绑定与待执行记录；重复请求返回已绑定的任务 ID。</p></li>
+        <li><strong>通知执行器</strong><p>事务提交后发送唤醒通知。通知失败时，由扫描待执行记录补偿，任务不会因通知丢失而消失。</p></li>
+      </ol>
+    </section>
+    <section class="subsection" id="generate-export" aria-labelledby="generate-export-title">
+      <h3 id="generate-export-title">阶段二：生成文件</h3>
+      <ol class="step-list" id="generate-export-steps" start="4">
+        <li><strong>领取与生成</strong><p>执行器取得任务租约，按固定快照生成 CSV。只有持有当前租约的执行器可以提交进展。</p></li>
+        <li><strong>验证与提交</strong><p>校验文件完整性，再确认租约仍有效且任务未取消；同时保存结果信息并将状态改为完成。</p></li>
+        <li><strong>查询与下载</strong><p>调用方查询到完成状态后，请求短时下载授权。生成过程不会主动向其他人发送文件。</p></li>
+      </ol>
+    </section>
+    <dl class="rule-list">
+      <div class="rule-row"><dt>取消并发</dt><dd>每次写入与最终提交前检查取消状态。若任务已取消，清理临时对象；不能把迟到的成功结果重新提交为完成。</dd></div>
+      <div class="rule-row"><dt>恢复边界</dt><dd>示例允许一次人工触发的恢复。恢复使用新执行编号，旧租约不能更新状态；自动重试次数与超时参数尚未设定。</dd></div>
+    </dl>
+  </div>
+</section>
+<section class="section-panel" id="export-contract" aria-labelledby="export-contract-title">
+  <div class="section-head"><span class="section-index" aria-hidden="true">03</span><h2 id="export-contract-title">接口与数据说明</h2></div>
+  <div class="section-body">
+    <p>本章给出创建入口与查询记录。影响调用行为的规则直接可见，字段定义与完整 JSON 按需展开。</p>
+    <section class="subsection" id="create-export" aria-labelledby="create-export-title">
+      <h3 id="create-export-title">创建导出任务</h3>
+      <dl class="rule-list">
+        <div class="rule-row"><dt>入口</dt><dd><code>POST /example/v1/export-tasks</code> 接收月份范围及格式；示例只接受 <code>csv</code>。</dd></div>
+        <div class="rule-row"><dt>幂等约定</dt><dd>同一调用方使用相同键与相同输入时返回已有任务；相同键对应不同输入时返回冲突，不覆盖原任务。</dd></div>
+        <div class="rule-row"><dt>受理含义</dt><dd>创建成功只表示任务已保存，响应状态为 <code>queued</code>。最终失败通过查询记录表达，不将先前受理成功解释为文件已经可用。</dd></div>
+      </dl>
+      <details>
+        <summary>创建请求字段：月份、格式与幂等键</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="创建请求字段，可横向滚动">
+          <table><caption>创建请求中的三项输入</caption>
+            <thead><tr><th scope="col">字段</th><th scope="col">类型</th><th scope="col">约束</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>month</code></th><td>string</td><td>必填，格式为 YYYY-MM</td></tr>
+              <tr><th scope="row"><code>format</code></th><td>string</td><td>必填，固定为 csv</td></tr>
+              <tr><th scope="row"><code>Idempotency-Key</code></th><td>请求头</td><td>必填，由调用方生成；同一次请求的重放保持不变</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>创建成功响应示例：任务已排队</summary>
+        <pre><code class="language-json">{
+  "task_id": "task_demo_001",
+  "status": "queued",
+  "download_url": null
+}</code></pre>
+      </details>
+    </section>
+    <section class="subsection" id="export-record" aria-labelledby="export-record-title">
+      <h3 id="export-record-title">查询任务与结果记录</h3>
+      <dl class="rule-list">
+        <div class="rule-row"><dt>查询入口</dt><dd><code>GET /example/v1/export-tasks/{task_id}</code> 返回当前状态；只能查询属于当前调用方的任务。</dd></div>
+        <div class="rule-row"><dt>结果边界</dt><dd>只有 <code>completed</code> 状态具有可用结果信息。下载授权过期后需要重新申请；任务过期或取消后拒绝签发新授权。</dd></div>
+        <div class="rule-row"><dt>失败表达</dt><dd><code>failed</code> 状态包含稳定的失败分类。响应不返回内部路径、访问凭据或原始异常堆栈；是否恢复由调用方决定。</dd></div>
+      </dl>
+      <details>
+        <summary>任务记录字段：状态、结果与失败原因</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="任务记录字段，可横向滚动">
+          <table><caption>查询返回的任务记录</caption>
+            <thead><tr><th scope="col">字段</th><th scope="col">类型</th><th scope="col">含义</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>task_id</code></th><td>string</td><td>创建后保持稳定的任务标识</td></tr>
+              <tr><th scope="row"><code>status</code></th><td>string</td><td>queued、running、completed、failed 或 cancelled</td></tr>
+              <tr><th scope="row"><code>result</code></th><td>object / null</td><td>仅完成后返回文件大小与行数</td></tr>
+              <tr><th scope="row"><code>failure_reason</code></th><td>string / null</td><td>仅失败后返回稳定分类</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>失败查询响应示例：文件校验未通过</summary>
+        <pre><code class="language-json">{
+  "task_id": "task_demo_001",
+  "status": "failed",
+  "result": null,
+  "failure_reason": "artifact_validation_failed"
+}</code></pre>
+      </details>
+    </section>
+  </div>
+</section>

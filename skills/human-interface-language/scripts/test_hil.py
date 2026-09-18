@@ -65,6 +65,83 @@ class HilTests(unittest.TestCase):
         self.assertTrue(report['ok'])
         self.assertEqual(report['warnings'], [])
 
+    def test_technical_example_preserves_semantics_in_tabs(self):
+        fragment = (Path(hil.__file__).resolve().parent.parent / 'assets/technical-body.html').read_text(encoding='utf-8')
+        source, source_report = hil.inspect(fragment, document=False)
+        rendered, report = hil.inspect(hil.build(fragment, '技术说明示例'))
+        self.assertTrue(source_report['ok'], source_report['errors'])
+        self.assertTrue(report['ok'], report['errors'])
+        source_nodes, output_nodes = list(source.root.walk()), list(rendered.root.walk())
+        chapters = [n for n in source_nodes if n.has('section-panel')]
+        panels = [n for n in output_nodes if n.attrs.get('role') == 'tabpanel']
+        self.assertTrue(chapters)
+        self.assertEqual([n.attrs['id'] for n in panels], [n.attrs['id'] for n in chapters])
+
+        def chapter_id(node):
+            return next(n.attrs.get('id') for n in hil.ancestors(node) if n.has('section-panel'))
+
+        links = [n.attrs['href'] for n in source_nodes if n.tag == 'a' and n.attrs.get('href', '').startswith('#')]
+        self.assertTrue(links)
+        output_ids = {n.attrs['id'] for n in output_nodes if 'id' in n.attrs}
+        output_links = {n.attrs.get('href') for n in output_nodes if n.tag == 'a'}
+        for link in links:
+            self.assertIn(link, output_links)
+            self.assertIn(link[1:], output_ids)
+
+        def steps(nodes):
+            return [(n.attrs.get('id'), n.attrs.get('start'), n.attrs.get('reversed'),
+                     [(c.attrs.get('value'), c.text().strip()) for c in n.children
+                      if isinstance(c, hil.Node) and c.tag == 'li'])
+                    for n in nodes if n.tag == 'ol' and n.has('step-list')]
+
+        source_steps = steps(source_nodes)
+        self.assertTrue(any(start and int(start) > 1 for _, start, _, _ in source_steps))
+        self.assertEqual(steps(output_nodes), source_steps)
+        for node in output_nodes:
+            if node.has('rule-row'):
+                self.assertEqual([c.tag for c in node.children if isinstance(c, hil.Node)], ['dt', 'dd'])
+
+        def subsections(nodes):
+            return [(n.attrs.get('id'), chapter_id(n),
+                     [(c.tag, c.attrs.get('id')) for c in n.children
+                      if isinstance(c, hil.Node) and c.tag in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')])
+                    for n in nodes if n.has('subsection')]
+
+        def summaries(nodes):
+            return [(chapter_id(n), [c.attrs['data-decision-role'] for c in n.walk()
+                                    if 'data-decision-role' in c.attrs])
+                    for n in nodes if n.has('decision-summary')]
+
+        self.assertEqual(subsections(output_nodes), subsections(source_nodes))
+        self.assertEqual(summaries(output_nodes), summaries(source_nodes))
+
+        source_diagrams = [n for n in source_nodes if n.has('diagram')]
+        output_diagrams = [n for n in output_nodes if n.has('diagram')]
+        self.assertTrue(source_diagrams)
+        self.assertEqual(len(output_diagrams), len(source_diagrams))
+        for original, diagram in zip(source_diagrams, output_diagrams):
+            self.assertEqual(chapter_id(diagram), chapter_id(original))
+            for ancestor in hil.ancestors(diagram):
+                if ancestor.has('section-panel'):
+                    break
+                self.assertNotEqual(ancestor.tag, 'details')
+                self.assertNotIn('hidden', ancestor.attrs)
+            caption = next(n for n in diagram.walk() if n.tag == 'figcaption')
+            self.assertEqual(caption.text(), next(n.text() for n in original.walk() if n.tag == 'figcaption'))
+            self.assertEqual(diagram.attrs.get('aria-labelledby'), caption.attrs.get('id'))
+            status = next(n for n in diagram.walk() if n.has('diagram-status'))
+            self.assertTrue(status.text().strip())
+            self.assertNotIn('hidden', status.attrs)
+            canvas = next(n for n in diagram.walk() if n.has('diagram-canvas'))
+            self.assertEqual(canvas.attrs.get('role'), 'img')
+            self.assertTrue(canvas.attrs.get('aria-label'))
+            fallback = next(n for n in diagram.walk() if n.has('diagram-source'))
+            self.assertEqual(fallback.tag, 'details')
+            self.assertNotIn('hidden', fallback.attrs)
+            code = next(n for n in fallback.walk() if n.tag == 'code')
+            self.assertEqual(code.text(), next(n.text() for n in original.walk() if n.tag == 'code'))
+            self.assertTrue(code.text().strip())
+
     def test_broken_structures_fail(self):
         for fragment, code in [
             ('<p id="x">A</p><p id="x">B</p>', 'duplicate-id'),
